@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.*;
 
 
 import javax.validation.Valid;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/v1")
@@ -40,6 +43,45 @@ public class UserController {
   @PostMapping("/users")
   public User createUser(@Valid @RequestBody User user) {
 	return userRepository.save(user);
+  }
+  
+  //Update the existing row
+  @PutMapping("user/{id}")
+  public ResponseEntity<User> updateUser(@PathVariable(value = "id") Long userId,
+										 @Valid @RequestBody User userDetails)
+		  throws ResourceNotFoundException {
+	
+	User user = userRepository.findById(userId)
+			.orElseThrow(() ->
+					new ResourceNotFoundException("User id not found" + userId));
+	
+	user.setEmail(userDetails.getEmail());
+	user.setLastName(userDetails.getLastName());
+	user.setFirstName(userDetails.getFirstName());
+	user.setUpdatedAt(new Date());
+	
+	
+	final User updatedUer = userRepository.save(user);
+	return ResponseEntity.ok(updatedUer);
+	
+	
+  }
+  
+  
+  //Delete the user
+  @DeleteMapping("/user/{id}")
+  public Map<String, Boolean> deleteUser(@PathVariable(value = "id") Long userId)
+		  throws Exception {
+	
+	User user = userRepository.findById(userId)
+			.orElseThrow(() -> new ResourceNotFoundException("user not found" + userId));
+	
+	
+	userRepository.delete(user);
+	Map<String, Boolean> response = new HashMap<>();
+	response.put("deleted", Boolean.TRUE);
+	return response;
+	
   }
   
   
